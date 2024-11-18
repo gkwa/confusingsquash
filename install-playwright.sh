@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Common CLI arguments
+BROWSER_ARG="--browser=chromium"
+COMMON_ARGS="$BROWSER_ARG --quiet --gha --lang=Typescript"
+CT_ARG="--ct"
+
 usage() {
     echo "Usage: $0 [--npm-ct | --npm | --pnpm | --pnpm-ct]"
     echo "  --npm:     Install Playwright without component testing using npm"
@@ -39,24 +44,24 @@ install_deps_pnpm() {
 case "$1" in
 --npm-ct)
     setup_dir
-    echo y | npm init playwright@latest -- --ct --browser=chromium --quiet --gha --lang=Typescript
+    echo y | npm init playwright@latest -- $CT_ARG $COMMON_ARGS
     install_deps_npm
     ;;
 --npm)
     setup_dir
-    echo y | npm init playwright@latest -- --browser=chromium --quiet --gha --lang=Typescript
+    echo y | npm init playwright@latest -- $COMMON_ARGS
     install_deps_npm
     ;;
 --pnpm)
     setup_dir
     setup_pnpm
-    pnpm create playwright --browser=chromium --install-deps --quiet --gha --lang=Typescript
+    pnpm create playwright $COMMON_ARGS --install-deps
     install_deps_pnpm
     ;;
 --pnpm-ct)
     setup_dir
     setup_pnpm
-    pnpm create playwright --ct --browser=chromium --install-deps --quiet --gha --lang=Typescript
+    pnpm create playwright $CT_ARG $COMMON_ARGS --install-deps
     install_deps_pnpm
     ;;
 *)
