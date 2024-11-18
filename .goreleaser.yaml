@@ -1,0 +1,63 @@
+version: 2
+before:
+  hooks:
+  - go mod tidy
+  - go generate ./...
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  main: main.go
+  goarch:
+  - amd64
+  binary: confusingsquash
+  id: confusingsquash
+  ldflags:
+  - -s -w
+    -X "github.com/gkwa/confusingsquash/version.Version={{ .Version }}"
+    -X "github.com/gkwa/confusingsquash/version.Date={{ .CommitDate }}"
+    -X "github.com/gkwa/confusingsquash/version.GoVersion={{ .Env.GOVERSION }}"
+    -X "github.com/gkwa/confusingsquash/version.ShortGitSHA={{ .ShortCommit }}"
+    -X "github.com/gkwa/confusingsquash/version.FullGitSHA={{ .FullCommit }}"
+archives:
+- format: tar.gz
+  name_template: |-
+    confusingsquash_ {{- title .Os }}_ {{- if eq .Arch "amd64" }}x86_64
+                               {{- else if eq .Arch "386" }}i386
+                               {{- else }}
+                               {{ .Arch }}
+                               {{ end }}
+                               {{- if .Arm }}v{{ .Arm }}{{ end }}
+  format_overrides:
+  - goos: windows
+    format: zip
+checksum:
+  name_template: checksums.txt
+snapshot:
+  version_template: '{{ incpatch .Version }}-next'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+brews:
+- name: confusingsquash
+  directory: Formula
+  homepage: https://github.com/gkwa/confusingsquash
+  repository:
+    owner: gkwa
+    name: homebrew-tools
+    branch: main
+scoops:
+- name: confusingsquash
+  homepage: https://github.com/gkwa/confusingsquash
+  description: "Description of the confusingsquash project"
+  license: MIT
+  repository:
+    owner: gkwa
+    name: scoop-bucket
+    branch: master
