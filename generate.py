@@ -46,9 +46,9 @@ for i, combo in enumerate(test_combinations):
     playwright_deps = ""
     if combo["playwright_deps"]:
         if combo["pm"] == "npm":
-            playwright_deps = "npm install --save-dev @playwright/test"
+            playwright_deps = "npm install --save-dev --save-exact @playwright/test"
         else:
-            playwright_deps = "pnpm add --save-dev @playwright/test"
+            playwright_deps = "pnpm add --save-dev --save-exact @playwright/test"
 
     ct_flag = " --ct" if combo["ct"] else ""
 
