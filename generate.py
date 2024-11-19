@@ -1,73 +1,80 @@
 #!/usr/bin/env python3
 
-package_managers = ['npm', 'npm-ct', 'pnpm', 'pnpm-ct']
-deps_options = ['deps', 'no-deps']
+test_combinations = [
+    {"pm": "npm", "ct": False, "deps": True, "playwright_deps": True},
+    {"pm": "npm", "ct": False, "deps": True, "playwright_deps": False},
+    {"pm": "npm", "ct": False, "deps": False, "playwright_deps": True},
+    {"pm": "npm", "ct": False, "deps": False, "playwright_deps": False},
+    {"pm": "npm", "ct": True, "deps": True, "playwright_deps": True},
+    {"pm": "npm", "ct": True, "deps": True, "playwright_deps": False},
+    {"pm": "npm", "ct": True, "deps": False, "playwright_deps": True},
+    {"pm": "npm", "ct": True, "deps": False, "playwright_deps": False},
+    {"pm": "pnpm", "ct": False, "deps": True, "playwright_deps": True},
+    {"pm": "pnpm", "ct": False, "deps": True, "playwright_deps": False},
+    {"pm": "pnpm", "ct": False, "deps": False, "playwright_deps": True},
+    {"pm": "pnpm", "ct": False, "deps": False, "playwright_deps": False},
+    {"pm": "pnpm", "ct": True, "deps": True, "playwright_deps": True},
+    {"pm": "pnpm", "ct": True, "deps": True, "playwright_deps": False},
+    {"pm": "pnpm", "ct": True, "deps": False, "playwright_deps": True},
+    {"pm": "pnpm", "ct": True, "deps": False, "playwright_deps": False},
+]
 
-script_template = '''#!/bin/bash
+pm_setups = {
+    "npm": "",
+    "pnpm": """corepack enable
+corepack prepare pnpm@latest --activate
+pnpm --version""",
+}
+
+script_template = """#!/bin/bash
 set -e
 rm -rf t && mkdir t && cd t
 
 {pm_setup}
 
-{init_commands}
+{init}
+{playwright_deps}
+{playwright_init}
+{deps}
+"""
 
-{deps_installation}
-'''
+for i, combo in enumerate(test_combinations):
+    filename = f"{i:03d}.sh"
 
-pm_setups = {
-    'npm': '',
-    'npm-ct': '',
-    'pnpm': '''corepack enable
-corepack prepare pnpm@latest --activate
-pnpm --version''',
-    'pnpm-ct': '''corepack enable
-corepack prepare pnpm@latest --activate
-pnpm --version'''
-}
+    init = f"{combo['pm']} init -y" if combo["pm"] == "npm" else "pnpm init"
 
-init_commands = {
-    'npm': '''npm init -y
-npm install --save-dev @playwright/test
-echo y | npm init playwright@latest -- --browser=chromium --quiet --gha --lang=Typescript --install-deps''',
-    'npm-ct': '''npm init -y
-npm install --save-dev @playwright/test
-echo y | npm init playwright@latest -- --ct --browser=chromium --quiet --gha --lang=Typescript --install-deps''',
-    'pnpm': '''pnpm init
-pnpm add --save-dev @playwright/test
-pnpm create playwright --browser=chromium --quiet --gha --lang=Typescript --install-deps''',
-    'pnpm-ct': '''pnpm init
-pnpm add --save-dev @playwright/test
-pnpm create playwright --ct --browser=chromium --quiet --gha --lang=Typescript --install-deps'''
-}
+    playwright_deps = ""
+    if combo["playwright_deps"]:
+        if combo["pm"] == "npm":
+            playwright_deps = "npm install --save-dev @playwright/test"
+        else:
+            playwright_deps = "pnpm add --save-dev @playwright/test"
 
-deps_installations = {
-    'deps': {
-        'npm': 'npm install --save-dev --save-exact typescript prettier',
-        'npm-ct': 'npm install --save-dev --save-exact typescript prettier',
-        'pnpm': 'pnpm add --save-dev --save-exact typescript prettier',
-        'pnpm-ct': 'pnpm add --save-dev --save-exact typescript prettier'
-    },
-    'no-deps': {
-        'npm': '',
-        'npm-ct': '',
-        'pnpm': '',
-        'pnpm-ct': ''
-    }
-}
+    ct_flag = " --ct" if combo["ct"] else ""
 
-for pm in package_managers:
-    for deps in deps_options:
-        filename = f"install-playwright-{pm}-{deps}.sh"
-        content = script_template.format(
-            pm_setup=pm_setups[pm],
-            init_commands=init_commands[pm],
-            deps_installation=deps_installations[deps][pm]
-        )
-        
-        with open(filename, 'w') as f:
-            f.write(content.strip())
+    if combo["pm"] == "npm":
+        playwright_init = f"echo y | npm init playwright@latest --{ct_flag} --browser=chromium --quiet --gha --lang=Typescript --install-deps"
+    else:
+        playwright_init = f"pnpm create playwright{ct_flag} --browser=chromium --quiet --gha --lang=Typescript --install-deps"
+
+    deps = ""
+    if combo["deps"]:
+        if combo["pm"] == "npm":
+            deps = "npm install --save-dev --save-exact typescript prettier"
+        else:
+            deps = "pnpm add --save-dev --save-exact typescript prettier"
+
+    content = script_template.format(
+        pm_setup=pm_setups[combo["pm"]],
+        init=init,
+        playwright_deps=playwright_deps,
+        playwright_init=playwright_init,
+        deps=deps,
+    )
+
+    with open(filename, "w") as f:
+        f.write(content.strip())
 
 print("Generated scripts:")
-for pm in package_managers:
-    for deps in deps_options:
-        print(f"install-playwright-{pm}-{deps}.sh")
+for i in range(len(test_combinations)):
+    print(f"{i:03d}.sh")
