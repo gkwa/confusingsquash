@@ -43,12 +43,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Generate Scripts
-        run: python3 generate.py
-
-      - name: Make scripts executable
-        run: chmod +x *.sh
-
       - name: Run Installation
         run: ./${{ matrix.script }}
 
