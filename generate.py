@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 
 test_combinations = [
     {"pm": "npm", "ct": False, "deps": True, "playwright_deps": True},
@@ -38,6 +39,47 @@ rm -rf t && mkdir t && cd t
 {deps}
 """
 
+ci_template = """name: Build & Test
+"on":
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: 01 13 * * SAT
+jobs:
+  build:
+    name: Build & Test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        script: {scripts}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+        with:
+          node-version: 20
+      - name: Generate Scripts
+        run: python3 generate.py
+      - name: Make scripts executable
+        run: chmod +x *.sh
+      - name: Run Installation
+        run: ./${{ matrix.script }}
+      - name: List Installation Results
+        run: |
+          set -x
+          cd t
+          ls -la
+          cat package.json
+          [[ -f "playwright.config.ts" ]] && cat playwright.config.ts || true
+          [[ -f "tsconfig.json" ]] && cat tsconfig.json || true"""
+
+# Generate shell scripts
 for i, combo in enumerate(test_combinations):
     filename = f"{i:03d}.sh"
 
@@ -75,6 +117,15 @@ for i, combo in enumerate(test_combinations):
     with open(filename, "w") as f:
         f.write(content.strip())
 
+# Generate ci.yml
+scripts = [f"{i:03d}.sh" for i in range(len(test_combinations))]
+scripts_yaml = json.dumps(scripts)
+ci_content = ci_template.format(scripts=scripts_yaml)
+
+with open(".github/workflows/ci.yml", "w") as f:
+    f.write(ci_content)
+
 print("Generated scripts:")
 for i in range(len(test_combinations)):
     print(f"{i:03d}.sh")
+print("\nGenerated .github/workflows/ci.yml")
