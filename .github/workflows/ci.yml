@@ -16,29 +16,28 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-        method:
-          - npm
-          - npm-ct
-          - pnpm
-          - pnpm-ct
-        deps:
-          - with-deps
-          - no-deps
+        script:
+          - install-playwright-npm-deps.sh
+          - install-playwright-npm-no-deps.sh
+          - install-playwright-npm-ct-deps.sh
+          - install-playwright-npm-ct-no-deps.sh
+          - install-playwright-pnpm-deps.sh
+          - install-playwright-pnpm-no-deps.sh
+          - install-playwright-pnpm-ct-deps.sh
+          - install-playwright-pnpm-ct-no-deps.sh
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: 20
-      - name: Make script executable
-        run: chmod +x ./install-playwright.sh
-      - name: Playwright - ${{ matrix.method }} ${{ matrix.deps }}
-        env:
-          METHOD: --${{ matrix.method }}
-          DEPS_FLAG: ${{ matrix.deps == 'no-deps' && '--no-deps' || '' }}
-        run: |
-          ./install-playwright.sh $METHOD $DEPS_FLAG
+      - name: Generate Scripts
+        run: python3 generate.py
+      - name: Make scripts executable
+        run: chmod +x install-playwright-*.sh
+      - name: Run Installation
+        run: ./${{ matrix.script }}
       - name: List Installation Results
         run: |
           set -x
