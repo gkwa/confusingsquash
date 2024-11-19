@@ -33,7 +33,7 @@ jobs:
           node-version: 20
       - name: Make script executable
         run: chmod +x ./install-playwright.sh
-      - name: Install Playwright - ${{ matrix.method }} ${{ matrix.deps }}
+      - name: Playwright - ${{ matrix.method }} ${{ matrix.deps }}
         env:
           METHOD: --${{ matrix.method }}
           DEPS_FLAG: ${{ matrix.deps == 'no-deps' && '--no-deps' || '' }}

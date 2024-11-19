@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 # Common CLI arguments
 BROWSER_ARG="--browser=chromium"
 COMMON_ARGS="$BROWSER_ARG --quiet --gha --lang=Typescript"
