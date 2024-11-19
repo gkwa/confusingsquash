@@ -97,16 +97,3 @@ case "$INSTALL_METHOD" in
     usage
     ;;
 esac
-
-Now you can run the script with any combination:
-$()$(
-    bash
-    ./install-playwright.sh --npm               # npm, no CT, with deps
-    ./install-playwright.sh --npm --no-deps     # npm, no CT, no deps
-    ./install-playwright.sh --npm-ct            # npm with CT, with deps
-    ./install-playwright.sh --npm-ct --no-deps  # npm with CT, no deps
-    ./install-playwright.sh --pnpm              # pnpm, no CT, with deps
-    ./install-playwright.sh --pnpm --no-deps    # pnpm, no CT, no deps
-    ./install-playwright.sh --pnpm-ct           # pnpm with CT, with deps
-    ./install-playwright.sh --pnpm-ct --no-deps # pnpm with CT, no deps
-)$()
