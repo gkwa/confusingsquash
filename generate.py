@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import stat, pathlib
 import json
 
 test_combinations = [
@@ -64,10 +65,6 @@ jobs:
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: 20
-      - name: Generate Scripts
-        run: python3 generate.py
-      - name: Make scripts executable
-        run: chmod +x *.sh
       - name: Run Installation
         run: ./${{ matrix.script }}
       - name: List Installation Results
@@ -81,7 +78,7 @@ jobs:
 
 # Generate shell scripts
 for i, combo in enumerate(test_combinations):
-    filename = f"{i:03d}.sh"
+    script_path = pathlib.Path(f"{i:03d}.sh")
 
     init = f"{combo['pm']} init -y" if combo["pm"] == "npm" else "pnpm init"
 
@@ -114,16 +111,17 @@ for i, combo in enumerate(test_combinations):
         deps=deps,
     )
 
-    with open(filename, "w") as f:
-        f.write(content.strip())
+    script_path.write_text(content.strip())
+    script_path.chmod(script_path.stat().st_mode | stat.S_IEXEC)
 
 # Generate ci.yml
 scripts = [f"{i:03d}.sh" for i in range(len(test_combinations))]
 scripts_yaml = json.dumps(scripts)
 ci_content = ci_template.format(scripts=scripts_yaml)
 
-with open(".github/workflows/ci.yml", "w") as f:
-    f.write(ci_content)
+workflows_dir = pathlib.Path(".github/workflows")
+workflows_dir.mkdir(parents=True, exist_ok=True)
+workflows_dir.joinpath("ci.yml").write_text(ci_content)
 
 print("Generated scripts:")
 for i in range(len(test_combinations)):
