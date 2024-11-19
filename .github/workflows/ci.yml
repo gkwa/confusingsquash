@@ -45,5 +45,5 @@ jobs:
           cd t
           ls -la
           cat package.json
-          [[ -f "playwright.config.ts" ]] && cat playwright.config.ts
-          [[ -f "tsconfig.json" ]] && cat tsconfig.json
+          [[ -f "playwright.config.ts" ]] && cat playwright.config.ts || true
+          [[ -f "tsconfig.json" ]] && cat tsconfig.json || true
