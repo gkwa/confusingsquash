@@ -8,5 +8,4 @@ pnpm --version
 
 pnpm init
 
-pnpm add --save-dev --save-exact @playwright/test
 pnpm create playwright --ct --browser=chromium --quiet --gha --lang=Typescript --install-deps
