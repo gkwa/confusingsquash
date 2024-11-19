@@ -54,6 +54,7 @@ rm -rf t && mkdir t && cd t
 {deps}
 """
 
+
 ci_template = """name: Build & Test
 "on":
   push:
@@ -66,7 +67,7 @@ ci_template = """name: Build & Test
     - cron: 01 13 * * SAT
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{{{ '{{' }}}} github.workflow }}-${{{{ '{{' }}}} github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -77,9 +78,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         script: {scripts}
-    runs-on: ${{ matrix.os }}
-    concurrency: 
-      group: build-${{ github.ref }}-${{ matrix.script }}
+    runs-on: ${{{{ '{{' }}}} matrix.os }}
+    concurrency:
+      group: build-${{{{ '{{' }}}} github.ref }}-${{{{ '{{' }}}} matrix.script }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -88,7 +89,7 @@ jobs:
         with:
           node-version: 20
       - name: Run Installation
-        run: ./${{ matrix.script }}
+        run: ./${{{{ '{{' }}}} matrix.script }}
       - name: List Installation Results
         run: |
           set -x
@@ -97,6 +98,7 @@ jobs:
           cat package.json
           [[ -f "playwright.config.ts" ]] && cat playwright.config.ts || true
           [[ -f "tsconfig.json" ]] && cat tsconfig.json || true"""
+
 
 for i, combo in enumerate(test_combinations):
     script_path = pathlib.Path(f"{i:03d}.sh")
@@ -131,9 +133,6 @@ for i, combo in enumerate(test_combinations):
 scripts = [f"{i:03d}.sh" for i in range(len(test_combinations))]
 scripts_yaml = json.dumps(scripts)
 ci_content = ci_template.format(scripts=scripts_yaml)
-
-# Replace single braces with double braces for GitHub Actions variables
-ci_content = ci_content.replace("${{", "${{{{").replace("}}", "}}}}")
 
 workflows_dir.mkdir(parents=True, exist_ok=True)
 ci_file = workflows_dir.joinpath("ci.yml")
