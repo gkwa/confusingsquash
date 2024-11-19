@@ -68,14 +68,14 @@ case "$INSTALL_METHOD" in
 --npm)
     setup_dir
     npm init -y
-    npm install --save-dev @playwright/test
+    npm install --save-dev --save-exact @playwright/test
     echo y | npm init playwright@latest -- $COMMON_ARGS $(get_install_deps_arg)
     install_deps_npm
     ;;
 --npm-ct)
     setup_dir
     npm init -y
-    npm install --save-dev @playwright/test
+    npm install --save-dev --save-exact @playwright/test
     echo y | npm init playwright@latest -- $CT_ARG $COMMON_ARGS $(get_install_deps_arg)
     install_deps_npm
     ;;
@@ -83,7 +83,7 @@ case "$INSTALL_METHOD" in
     setup_dir
     setup_pnpm
     pnpm init
-    pnpm add --save-dev @playwright/test
+    pnpm add --save-dev --save-exact @playwright/test
     pnpm create playwright $COMMON_ARGS $(get_install_deps_arg)
     install_deps_pnpm
     ;;
@@ -91,7 +91,7 @@ case "$INSTALL_METHOD" in
     setup_dir
     setup_pnpm
     pnpm init
-    pnpm add --save-dev @playwright/test
+    pnpm add --save-dev --save-exact @playwright/test
     pnpm create playwright $CT_ARG $COMMON_ARGS $(get_install_deps_arg)
     install_deps_pnpm
     ;;
