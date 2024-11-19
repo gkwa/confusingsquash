@@ -64,6 +64,9 @@ ci_template = """name: Build & Test
       - "*"
   schedule:
     - cron: 01 13 * * SAT
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     name: Build & Test
