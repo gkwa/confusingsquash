@@ -41,6 +41,7 @@ jobs:
           ./install-playwright.sh $METHOD $DEPS_FLAG
       - name: List Installation Results
         run: |
+          set -x
           cd t
           ls -la
           cat package.json
